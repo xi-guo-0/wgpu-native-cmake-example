@@ -1,0 +1,15 @@
+#+title: Creating a wgpu-native Example on macOS
+
+* Introduction
+This is an example of using the Rust library wgpu-native with C and CMake on macOS to create a simple graphics application
+
+* Dependencies
+- Xcode Command Line Tools
+- cmake
+
+* Acknowledgments
+
+Thanks to the developers of wgpu-native for providing a great library.
+
+* Appendix
+- wgpu-native examples repository: https://github.com/gfx-rs/wgpu-native
