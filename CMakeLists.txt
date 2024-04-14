@@ -22,12 +22,21 @@ CPMAddPackage(
     "GLFW_BUILD_DOCS OFF"
     "GLFW_INSTALL OFF"
 )
+
+if(APPLE)
+  set(WGPU_NATIVE_RELEASES_NAME wgpu-macos-aarch64-release.zip)
+elseif(LINUX)
+  set(WGPU_NATIVE_RELEASES_NAME wgpu-linux-x86_64-release.zip)
+else()
+  set(WGPU_NATIVE_RELEASES_NAME wgpu-windows-x86_64-release.zip)
+endif()
 CPMAddPackage(
   NAME wgpu-native
-  URL https://github.com/gfx-rs/wgpu-native/releases/download/v0.19.3.1/wgpu-macos-aarch64-release.zip
+  URL "https://github.com/gfx-rs/wgpu-native/releases/download/v0.19.3.1/${WGPU_NATIVE_RELEASES_NAME}"
   VERSION 0.19.3.1
   DOWNLOAD_ONLY True
 )
+
 CPMAddPackage(
   NAME glfw3webgpu
   GITHUB_REPOSITORY eliemichel/glfw3webgpu
