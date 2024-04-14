@@ -6,10 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(GLFW_EXPOSE_NATIVE_COCOA)
-#include <Foundation/Foundation.h>
-#include <QuartzCore/CAMetalLayer.h>
-#endif
+#include <glfw3webgpu.h>
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -97,87 +94,8 @@ int main(int argc, char *argv[]) {
   glfwSetKeyCallback(window, handle_glfw_key);
   glfwSetFramebufferSizeCallback(window, handle_glfw_framebuffer_size);
 
-#if defined(GLFW_EXPOSE_NATIVE_COCOA)
-  {
-    id metal_layer = NULL;
-    NSWindow *ns_window = glfwGetCocoaWindow(window);
-    [ns_window.contentView setWantsLayer:YES];
-    metal_layer = [CAMetalLayer layer];
-    [ns_window.contentView setLayer:metal_layer];
-    demo.surface = wgpuInstanceCreateSurface(
-        demo.instance,
-        &(const WGPUSurfaceDescriptor){
-            .nextInChain =
-                (const WGPUChainedStruct *)&(
-                    const WGPUSurfaceDescriptorFromMetalLayer){
-                    .chain =
-                        (const WGPUChainedStruct){
-                            .sType = WGPUSType_SurfaceDescriptorFromMetalLayer,
-                        },
-                    .layer = metal_layer,
-                },
-        });
-  }
-#elif defined(GLFW_EXPOSE_NATIVE_WAYLAND) && defined(GLFW_EXPOSE_NATIVE_X11)
-  if (glfwGetPlatform() == GLFW_PLATFORM_X11) {
-    Display *x11_display = glfwGetX11Display();
-    Window x11_window = glfwGetX11Window(window);
-    demo.surface = wgpuInstanceCreateSurface(
-        demo.instance,
-        &(const WGPUSurfaceDescriptor){
-            .nextInChain =
-                (const WGPUChainedStruct *)&(
-                    const WGPUSurfaceDescriptorFromXlibWindow){
-                    .chain =
-                        (const WGPUChainedStruct){
-                            .sType = WGPUSType_SurfaceDescriptorFromXlibWindow,
-                        },
-                    .display = x11_display,
-                    .window = x11_window,
-                },
-        });
-  }
-  if (glfwGetPlatform() == GLFW_PLATFORM_WAYLAND) {
-    struct wl_display *wayland_display = glfwGetWaylandDisplay();
-    struct wl_surface *wayland_surface = glfwGetWaylandWindow(window);
-    demo.surface = wgpuInstanceCreateSurface(
-        demo.instance,
-        &(const WGPUSurfaceDescriptor){
-            .nextInChain =
-                (const WGPUChainedStruct *)&(
-                    const WGPUSurfaceDescriptorFromWaylandSurface){
-                    .chain =
-                        (const WGPUChainedStruct){
-                            .sType =
-                                WGPUSType_SurfaceDescriptorFromWaylandSurface,
-                        },
-                    .display = wayland_display,
-                    .surface = wayland_surface,
-                },
-        });
-  }
-#elif defined(GLFW_EXPOSE_NATIVE_WIN32)
-  {
-    HWND hwnd = glfwGetWin32Window(window);
-    HINSTANCE hinstance = GetModuleHandle(NULL);
-    demo.surface = wgpuInstanceCreateSurface(
-        demo.instance,
-        &(const WGPUSurfaceDescriptor){
-            .nextInChain =
-                (const WGPUChainedStruct *)&(
-                    const WGPUSurfaceDescriptorFromWindowsHWND){
-                    .chain =
-                        (const WGPUChainedStruct){
-                            .sType = WGPUSType_SurfaceDescriptorFromWindowsHWND,
-                        },
-                    .hinstance = hinstance,
-                    .hwnd = hwnd,
-                },
-        });
-  }
-#else
-#error "Unsupported GLFW native platform"
-#endif
+  demo.surface = glfwGetWGPUSurface(demo.instance, window);
+
   assert(demo.surface);
 
   wgpuInstanceRequestAdapter(demo.instance,

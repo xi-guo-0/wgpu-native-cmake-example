@@ -28,7 +28,31 @@ CPMAddPackage(
   VERSION 0.19.3.1
   DOWNLOAD_ONLY True
 )
+CPMAddPackage(
+  NAME glfw3webgpu
+  GITHUB_REPOSITORY eliemichel/glfw3webgpu
+  GIT_TAG v1.2.0
+  VERSION 1.2.0
+  DOWNLOAD_ONLY True
+)
+if(glfw3webgpu_ADDED)
+  if(NOT EXISTS "${wgpu-native_SOURCE_DIR}/webgpu/webgpu.h")
+    file(MAKE_DIRECTORY "${wgpu-native_SOURCE_DIR}/webgpu")
+    file(COPY "${wgpu-native_SOURCE_DIR}/webgpu.h" DESTINATION "${wgpu-native_SOURCE_DIR}/webgpu/")
+  endif()
 
-add_compile_definitions(GLFW_EXPOSE_NATIVE_COCOA)
+  add_library(glfw3webgpu ${glfw3webgpu_SOURCE_DIR}/glfw3webgpu.c)
+  target_include_directories(glfw3webgpu
+    PUBLIC "${glfw3webgpu_SOURCE_DIR}"
+           "${wgpu-native_SOURCE_DIR}")
+  target_link_directories(glfw3webgpu
+    PUBLIC "${wgpu-native_SOURCE_DIR}")
+  target_link_libraries(glfw3webgpu PUBLIC glfw wgpu_native)
+
+  if (APPLE)
+    target_compile_options(glfw3webgpu PRIVATE -x objective-c)
+    target_link_libraries(glfw3webgpu PRIVATE "-framework Cocoa" "-framework CoreVideo" "-framework IOKit" "-framework QuartzCore")
+  endif ()
+endif()
 
 add_subdirectory(src)
